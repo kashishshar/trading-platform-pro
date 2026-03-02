@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Trading Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white min-h-screen">
+    <div class="container mx-auto p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold mb-2">🔐 Admin Dashboard</h1>
+            <p class="text-gray-400">View All Registered Users</p>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">👥 Registered Users</h2>
+                <button onclick="loadUsers()" class="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg font-semibold transition">
+                    🔄 Refresh
+                </button>
+            </div>
+
+            <div id="loading" class="text-center py-8 text-gray-400">
+                Loading users...
+            </div>
+
+            <div id="userStats" class="hidden mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gradient-to-br from-blue-600 to-blue-800 p-4 rounded-lg">
+                    <div class="text-3xl font-bold" id="totalUsers">0</div>
+                    <div class="text-sm text-blue-200">Total Users</div>
+                </div>
+                <div class="bg-gradient-to-br from-green-600 to-green-800 p-4 rounded-lg">
+                    <div class="text-3xl font-bold" id="totalOrders">0</div>
+                    <div class="text-sm text-green-200">Total Orders</div>
+                </div>
+                <div class="bg-gradient-to-br from-purple-600 to-purple-800 p-4 rounded-lg">
+                    <div class="text-3xl font-bold" id="totalTrades">0</div>
+                    <div class="text-sm text-purple-200">Total Trades</div>
+                </div>
+                <div class="bg-gradient-to-br from-orange-600 to-orange-800 p-4 rounded-lg">
+                    <div class="text-3xl font-bold" id="bajajUsers">0</div>
+                    <div class="text-sm text-orange-200">Bajaj Connected</div>
+                </div>
+            </div>
+
+            <div id="usersTable" class="hidden overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b border-gray-700">
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">ID</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Name</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Email</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Password</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Created</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Orders</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Trades</th>
+                            <th class="text-left py-3 px-4 text-gray-400 font-semibold">Bajaj</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="error" class="hidden text-center py-8">
+                <div class="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg"></div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="index.html" class="text-purple-400 hover:text-purple-300">
+                ← Back to Trading Platform
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api/v1';
+        const ADMIN_KEY = 'admin123'; // Change this to match your backend ADMIN_KEY
+
+        async function loadUsers() {
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const stats = document.getElementById('userStats');
+            const table = document.getElementById('usersTable');
+            
+            // Show loading
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            stats.classList.add('hidden');
+            table.classList.add('hidden');
+
+            try {
+                const response = await fetch(`${API_URL}/admin/users`, {
+                    headers: {
+                        'X-Admin-Key': ADMIN_KEY
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Unauthorized - Invalid admin key');
+                    }
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    displayUsers(data.data, data.total_users);
+                } else {
+                    throw new Error(data.message || 'Failed to load users');
+                }
+            } catch (err) {
+                console.error('Error loading users:', err);
+                loading.classList.add('hidden');
+                error.classList.remove('hidden');
+                error.querySelector('div').textContent = `Error: ${err.message}. Make sure backend is running at ${API_URL}`;
+            }
+        }
+
+        function displayUsers(users, totalUsers) {
+            const loading = document.getElementById('loading');
+            const stats = document.getElementById('userStats');
+            const table = document.getElementById('usersTable');
+            const tbody = document.getElementById('usersTableBody');
+
+            // Hide loading
+            loading.classList.add('hidden');
+            
+            // Show stats
+            stats.classList.remove('hidden');
+            table.classList.remove('hidden');
+
+            // Calculate stats
+            const totalOrders = users.reduce((sum, u) => sum + u.totalOrders, 0);
+            const totalTrades = users.reduce((sum, u) => sum + u.totalTrades, 0);
+            const bajajUsers = users.filter(u => u.bajajConnected).length;
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalOrders').textContent = totalOrders;
+            document.getElementById('totalTrades').textContent = totalTrades;
+            document.getElementById('bajajUsers').textContent = bajajUsers;
+
+            // Display users table
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-8 text-gray-400">
+                            No users registered yet
+                        </td>
+                    </tr>
+                `;
+            } else {
+                tbody.innerHTML = users.map((user, index) => {
+                    const date = new Date(user.createdAt).toLocaleString();
+                    const serialNumber = index + 1; // Sequential number starting from 1
+                    return `
+                        <tr class="border-b border-gray-800 hover:bg-gray-700/50 transition">
+                            <td class="py-3 px-4 font-mono text-sm text-gray-400">#${serialNumber}</td>
+                            <td class="py-3 px-4 font-semibold">${user.fullName || '-'}</td>
+                            <td class="py-3 px-4 text-purple-400">${user.email}</td>
+                            <td class="py-3 px-4">
+                                <div class="flex items-center gap-2">
+                                    <input type="password" value="${user.passwordHash}" 
+                                           id="pwd-${serialNumber}" 
+                                           class="bg-gray-700 px-2 py-1 rounded text-xs font-mono w-48" 
+                                           readonly>
+                                    <button onclick="togglePassword(${serialNumber})" 
+                                            class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs">
+                                        👁️
+                                    </button>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 text-sm text-gray-400">${date}</td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="bg-blue-500/20 text-blue-300 px-2 py-1 rounded-full text-sm">
+                                    ${user.totalOrders}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="bg-green-500/20 text-green-300 px-2 py-1 rounded-full text-sm">
+                                    ${user.totalTrades}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                ${user.bajajConnected ? 
+                                    '<span class="text-green-400">✓ Yes</span>' : 
+                                    '<span class="text-gray-500">✗ No</span>'
+                                }
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function togglePassword(id) {
+            const input = document.getElementById(`pwd-${id}`);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Load users when page loads
+        window.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+</body>
+</html>
