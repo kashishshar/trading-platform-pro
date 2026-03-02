@@ -6,9 +6,13 @@ A full-stack trading platform with user authentication, portfolio management, an
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Flask](https://img.shields.io/badge/flask-3.0.3-green.svg)](https://flask.palletsprojects.com/)
 
-## 📸 Screenshots
+## Screenshots
 
-![Dashboard](https://via.placeholder.com/800x400?text=Add+Your+Screenshot+Here)
+<img width="1002" height="572" alt="LoginPage" src="https://github.com/user-attachments/assets/f5bff2b0-41bc-4bec-b054-a9e35326bf8a" />
+<img width="1100" height="590" alt="Dashboard with portfolio" src="https://github.com/user-attachments/assets/a1d3ab5b-4139-4d2d-8b4a-0dcbd176062f" />
+<img width="1082" height="584" alt="Trades" src="https://github.com/user-attachments/assets/b6379a75-86ab-4070-a41c-0ea8eaccfd62" />
+<img width="1081" height="526" alt="Admin dashboard with users" src="https://github.com/user-attachments/assets/f721a0e8-0f50-401c-b165-fcf4d296eb4b" />
+<img width="563" height="586" alt="Mobile responsive view" src="https://github.com/user-attachments/assets/50785e2d-4fee-4d76-8660-f4a40d1ea034" />
 
 ## Features
 
